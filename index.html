@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daymark | Task planner</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --ink: #17221f;
+      --muted: #6f7b77;
+      --line: #dfe7e2;
+      --paper: #f7faf7;
+      --panel: #ffffff;
+      --mint: #d8f2e8;
+      --green: #1e6b50;
+      --coral: #f06c57;
+      --amber: #e2a72e;
+      --shadow: 0 18px 50px rgba(34, 67, 54, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app-shell { max-width: 1440px; min-height: 100vh; margin: 0 auto; display: grid; grid-template-columns: 250px 1fr; }
+    aside { padding: 38px 24px; border-right: 1px solid var(--line); background: #eef6f0; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.04em; font-size: 20px; }
+    .brand-mark { width: 28px; height: 28px; border-radius: 9px 9px 9px 2px; background: var(--green); position: relative; transform: rotate(-8deg); }
+    .brand-mark:after { content: ''; position: absolute; width: 10px; height: 5px; border-left: 2px solid white; border-bottom: 2px solid white; transform: rotate(-45deg); left: 8px; top: 9px; }
+    .eyebrow { color: var(--muted); font: 500 10px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .13em; }
+    nav { margin-top: 62px; display: grid; gap: 8px; }
+    .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 13px; border-radius: 8px; color: var(--muted); border: 0; background: transparent; text-align: left; transition: .2s ease; }
+    .nav-item:hover, .nav-item.active { color: var(--ink); background: var(--panel); box-shadow: 0 5px 18px rgba(47, 83, 65, .06); }
+    .nav-item.active { font-weight: 700; }
+    .nav-label { display: flex; align-items: center; gap: 11px; }
+    .nav-icon { width: 17px; text-align: center; font-size: 16px; }
+    .count { font: 500 11px 'DM Mono', monospace; color: var(--muted); }
+    .sidebar-bottom { margin-top: auto; }
+    .quote { padding: 17px; background: var(--mint); border-radius: 10px; font-size: 12px; line-height: 1.6; }
+    .quote strong { display: block; margin-bottom: 8px; font-size: 13px; }
+    .main { padding: 40px clamp(24px, 5vw, 72px) 60px; }
+    .topbar { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+    h1 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -.06em; margin: 7px 0 8px; line-height: 1.05; }
+    .subhead { margin: 0; color: var(--muted); font-size: 13px; }
+    .date-stamp { text-align: right; color: var(--muted); font: 500 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; line-height: 1.6; }
+    .date-stamp strong { display: block; color: var(--ink); font: 700 13px 'Manrope', sans-serif; text-transform: none; letter-spacing: 0; }
+    .account-bar { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .account-name { color: var(--muted); font-size: 11px; }
+    .logout-button { border: 0; border-bottom: 1px solid var(--muted); background: transparent; padding: 0; color: var(--muted); font-size: 11px; }
+    .summary { margin: 36px 0 28px; display: flex; align-items: center; gap: 15px; }
+    .progress-track { height: 7px; background: #e5ece7; border-radius: 10px; flex: 1; max-width: 410px; overflow: hidden; }
+    .progress-bar { width: 0%; height: 100%; background: var(--green); border-radius: inherit; transition: width .3s ease; }
+    .summary-text { font-size: 12px; color: var(--muted); }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .add-button { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: white; border: 0; border-radius: 7px; padding: 11px 15px; font-weight: 700; font-size: 12px; transition: transform .2s, background .2s; }
+    .add-button:hover { transform: translateY(-1px); background: var(--green); }
+    .add-button span { font-size: 17px; line-height: 10px; font-weight: 400; }
+    .search { margin-left: auto; position: relative; }
+    .search input { width: 210px; border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px 10px 34px; background: var(--panel); font-size: 12px; outline: none; }
+    .search input:focus, .task-input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(30, 107, 80, .1); }
+    .search-icon { position: absolute; left: 12px; top: 9px; color: var(--muted); font-size: 14px; }
+    .filters { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+    .filter { border: 0; background: none; padding: 10px 12px 12px; color: var(--muted); font-size: 12px; position: relative; }
+    .filter.active { color: var(--ink); font-weight: 700; }
+    .filter.active:after { content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px; height: 2px; background: var(--coral); }
+    .task-list { display: grid; gap: 1px; }
+    .task { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 16px 8px; border-bottom: 1px solid var(--line); animation: slide-in .35s ease both; }
+    @keyframes slide-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .check { width: 19px; height: 19px; border: 1.5px solid #acbab1; border-radius: 50%; background: transparent; position: relative; transition: .2s; }
+    .check:hover { border-color: var(--green); }
+    .task.done .check { background: var(--green); border-color: var(--green); }
+    .task.done .check:after { content: ''; position: absolute; width: 8px; height: 4px; border-left: 2px solid white; border-bottom: 2px solid white; transform: rotate(-45deg); left: 4px; top: 5px; }
+    .task-main { min-width: 0; }
+    .task-title { font-size: 13px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; }
+    .task.done .task-title { color: #9aa59f; text-decoration: line-through; }
+    .task-meta { display: flex; align-items: center; gap: 9px; margin-top: 5px; color: var(--muted); font: 400 10px 'DM Mono', monospace; }
+    .tag { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; padding: 3px 6px; border-radius: 4px; background: #eff3f0; }
+    .tag.work { color: #4d6380; background: #e9eff8; }
+    .tag.personal { color: #936249; background: #f9ece4; }
+    .tag.health { color: #4f806a; background: #e7f4eb; }
+    .task-actions { display: flex; align-items: center; gap: 5px; opacity: 0; transition: opacity .2s; }
+    .task:hover .task-actions, .task:focus-within .task-actions { opacity: 1; }
+    .icon-button { border: 0; background: transparent; color: var(--muted); width: 28px; height: 28px; border-radius: 5px; font-size: 14px; }
+    .icon-button:hover { color: var(--ink); background: #edf2ee; }
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; }
+    .empty strong { display: block; color: var(--ink); margin-bottom: 6px; }
+    .modal-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(23, 34, 31, .3); padding: 20px; z-index: 2; }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: min(440px, 100%); background: var(--panel); border-radius: 10px; padding: 25px; box-shadow: var(--shadow); }
+    .modal h2 { font-size: 20px; letter-spacing: -.04em; margin: 0 0 20px; }
+    .form-grid { display: grid; gap: 15px; }
+    label { color: var(--muted); font: 500 10px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+    .task-input, select { display: block; width: 100%; margin-top: 7px; border: 1px solid var(--line); border-radius: 6px; padding: 11px; color: var(--ink); outline: none; background: white; font-size: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+    .secondary-button, .primary-button { border: 0; border-radius: 6px; padding: 10px 14px; font-size: 12px; font-weight: 700; }
+    .secondary-button { background: #edf2ee; color: var(--ink); }
+    .primary-button { background: var(--green); color: white; }
+    .auth-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--paper); padding: 20px; z-index: 3; }
+    .auth-backdrop.hidden { display: none; }
+    .auth-card { width: min(430px, 100%); background: white; border: 1px solid var(--line); border-radius: 12px; padding: 34px; box-shadow: var(--shadow); }
+    .auth-card h2 { font-size: 28px; letter-spacing: -.06em; margin: 8px 0; }
+    .auth-card p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0 0 25px; }
+    .auth-toggle { border: 0; background: transparent; color: var(--green); padding: 0; font-size: 12px; font-weight: 700; }
+    .auth-error { min-height: 18px; color: var(--coral); font-size: 11px; margin: 10px 0 0; }
+    .auth-submit { width: 100%; margin-top: 8px; }
+    .auth-switch { text-align: center; margin: 18px 0 0 !important; }
+    @media (max-width: 720px) {
+      .app-shell { display: block; }
+      aside { padding: 18px 20px; border-right: 0; border-bottom: 1px solid var(--line); }
+      nav { margin-top: 20px; display: flex; overflow-x: auto; gap: 4px; }
+      .nav-item { flex: 0 0 auto; padding: 8px 11px; }
+      .sidebar-bottom { display: none; }
+      .main { padding: 28px 20px 45px; }
+      .topbar { display: block; }
+      .date-stamp { text-align: left; margin-top: 16px; }
+      .summary { margin-top: 25px; }
+      .search input { width: 155px; }
+      .task { grid-template-columns: 24px minmax(0, 1fr); }
+      .task-actions { grid-column: 2; opacity: 1; margin-top: -8px; }
+    }
+    @media (max-width: 430px) {
+      .toolbar { flex-wrap: wrap; }
+      .search { margin-left: 0; width: 100%; }
+      .search input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside>
+      <div class="brand"><span class="brand-mark"></span> daymark</div>
+      <nav aria-label="Task lists">
+        <button class="nav-item active" data-filter="all"><span class="nav-label"><span class="nav-icon">□</span> All tasks</span><span class="count" id="all-count">0</span></button>
+        <button class="nav-item" data-filter="today"><span class="nav-label"><span class="nav-icon">◷</span> Today</span><span class="count" id="today-count">0</span></button>
+        <button class="nav-item" data-filter="upcoming"><span class="nav-label"><span class="nav-icon">↗</span> Upcoming</span><span class="count" id="upcoming-count">0</span></button>
+        <button class="nav-item" data-filter="completed"><span class="nav-label"><span class="nav-icon">✓</span> Completed</span><span class="count" id="completed-count">0</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="eyebrow">A small note</div>
+        <div class="quote"><strong>Progress, not pressure.</strong>Make room for the things that matter today.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">Your focus</div><h1 id="page-title">All tasks</h1><p class="subhead">A clear mind starts with a clear list.</p></div>
+        <div class="date-stamp"><strong id="date-label"></strong><span id="week-label"></span><div class="account-bar"><span class="account-name" id="account-name"></span><button class="logout-button" id="logout">Log out</button></div></div>
+      </header>
+
+      <div class="summary"><div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div><div class="summary-text" id="progress-text">0 of 0 completed</div></div>
+      <div class="toolbar"><button class="add-button" id="add-task"><span>+</span> Add task</button><div class="search"><span class="search-icon">⌕</span><input id="search" type="search" placeholder="Search tasks..." aria-label="Search tasks"></div></div>
+      <div class="filters"><button class="filter active" data-status="all">Everything</button><button class="filter" data-status="open">To do</button><button class="filter" data-status="done">Done</button></div>
+      <section class="task-list" id="task-list" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div class="auth-backdrop" id="auth-backdrop">
+    <form class="auth-card" id="auth-form">
+      <div class="brand"><span class="brand-mark"></span> daymark</div>
+      <h2 id="auth-title">Welcome back.</h2>
+      <p id="auth-description">Sign in to keep your tasks synced and private across devices.</p>
+      <div class="form-grid">
+        <label id="name-field">Your name<input class="task-input" id="auth-name" autocomplete="name" maxlength="60"></label>
+        <label>Email<input class="task-input" id="auth-email" type="email" autocomplete="email" required></label>
+        <label>Password<input class="task-input" id="auth-password" type="password" minlength="8" autocomplete="current-password" required></label>
+        <button class="primary-button auth-submit" type="submit" id="auth-submit">Create account</button>
+        <p class="auth-error" id="auth-error" role="alert"></p>
+        <p class="auth-switch" id="auth-switch-copy">Already have an account? <button class="auth-toggle" id="auth-toggle" type="button">Sign in</button></p>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop">
+    <form class="modal" id="task-form">
+      <h2 id="modal-title">Add a new task</h2>
+      <div class="form-grid">
+        <label>Task name<input class="task-input" id="task-title" required maxlength="100" placeholder="What needs doing?"></label>
+        <div class="form-row"><label>List<select id="task-list-name"><option value="personal">Personal</option><option value="work">Work</option><option value="health">Health</option></select></label><label>Due date<input class="task-input" id="task-due" type="date"></label></div>
+        <label>Priority<select id="task-priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary-button" id="cancel-modal">Cancel</button><button class="primary-button" type="submit">Save task</button></div>
+    </form>
+  </div>
+
+  <script>
+    const today = new Date();
+    const dateKey = (date) => date.toISOString().slice(0, 10);
+    const formatDate = (value) => value ? new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'No due date';
+    let tasks = [];
+    let currentUser = null;
+    let activeView = 'all';
+    let activeStatus = 'all';
+    let editingId = null;
+    let authMode = 'signup';
+
+    const $ = (selector) => document.querySelector(selector);
+    const api = async (url, options = {}) => {
+      if (window.location.protocol === 'file:') throw new Error('Start the app with "npm start" and open http://localhost:3000. Do not open index.html directly.');
+      let response;
+      try { response = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options }); } catch { throw new Error('The Daymark server is not running. Start it with "npm start" and open http://localhost:3000.'); }
+      const text = response.status === 204 ? '' : await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch { throw new Error(`The server returned an invalid response (${response.status}). Check that the Express server is running.`); }
+      if (!response.ok) throw new Error(data?.error || `Request failed (${response.status})`);
+      return data;
+    };
+    const isToday = (task) => task.due === dateKey(today);
+    const visibleTasks = () => tasks.filter(task => {
+      const viewMatch = activeView === 'all' || (activeView === 'today' && isToday(task)) || (activeView === 'upcoming' && task.due > dateKey(today)) || (activeView === 'completed' && task.completed);
+      const statusMatch = activeStatus === 'all' || (activeStatus === 'open' && !task.completed) || (activeStatus === 'done' && task.completed);
+      const query = $('#search').value.toLowerCase().trim();
+      return viewMatch && statusMatch && (!query || task.title.toLowerCase().includes(query) || task.category.includes(query));
+    });
+
+    function render() {
+      const list = $('#task-list');
+      const shown = visibleTasks();
+      list.innerHTML = shown.length ? shown.map((task, index) => `
+        <article class="task ${task.completed ? 'done' : ''}" style="animation-delay:${index * 45}ms">
+          <button class="check" data-action="toggle" data-id="${task._id}" aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}"></button>
+          <div class="task-main"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="tag ${task.category}">${task.category}</span><span>${formatDate(task.due)}</span><span style="color:${task.priority === 'high' ? 'var(--coral)' : task.priority === 'medium' ? 'var(--amber)' : 'var(--muted)'}">● ${task.priority}</span></div></div>
+          <div class="task-actions"><button class="icon-button" data-action="edit" data-id="${task._id}" aria-label="Edit task">✎</button><button class="icon-button" data-action="delete" data-id="${task._id}" aria-label="Delete task">×</button></div>
+        </article>`).join('') : '<div class="empty"><strong>No tasks here.</strong>Enjoy the breathing room, or add something new.</div>';
+
+      const total = tasks.length; const done = tasks.filter(task => task.completed).length;
+      $('#progress-bar').style.width = total ? `${done / total * 100}%` : '0%'; $('#progress-text').textContent = `${done} of ${total} completed`;
+      $('#all-count').textContent = tasks.filter(task => !task.completed).length; $('#today-count').textContent = tasks.filter(task => isToday(task) && !task.completed).length; $('#upcoming-count').textContent = tasks.filter(task => task.due > dateKey(today) && !task.completed).length; $('#completed-count').textContent = done;
+    }
+    function escapeHtml(text) { return text.replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character])); }
+    function openModal(id = null) { editingId = id; const task = tasks.find(item => item._id === id); $('#modal-title').textContent = task ? 'Edit task' : 'Add a new task'; $('#task-title').value = task?.title || ''; $('#task-list-name').value = task?.category || 'personal'; $('#task-due').value = task?.due || dateKey(today); $('#task-priority').value = task?.priority || 'medium'; $('#modal-backdrop').classList.add('open'); $('#task-title').focus(); }
+    function closeModal() { $('#modal-backdrop').classList.remove('open'); editingId = null; }
+
+    document.addEventListener('click', async (event) => {
+      const action = event.target.closest('[data-action]');
+      if (action) { const id = action.dataset.id; if (action.dataset.action === 'edit') return openModal(id); try { if (action.dataset.action === 'toggle') { const task = tasks.find(item => item._id === id); await api(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ completed: !task.completed }) }); } if (action.dataset.action === 'delete') await api(`/api/tasks/${id}`, { method: 'DELETE' }); await loadTasks(); } catch (error) { alert(error.message); } return; }
+      const view = event.target.closest('[data-filter]'); if (view) { activeView = view.dataset.filter; document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item === view)); $('#page-title').textContent = view.textContent.trim().replace(/\d+$/, ''); render(); }
+      const status = event.target.closest('[data-status]'); if (status) { activeStatus = status.dataset.status; document.querySelectorAll('.filter').forEach(item => item.classList.toggle('active', item === status)); render(); }
+    });
+    $('#add-task').addEventListener('click', () => openModal()); $('#cancel-modal').addEventListener('click', closeModal); $('#search').addEventListener('input', render);
+    $('#modal-backdrop').addEventListener('click', event => { if (event.target.id === 'modal-backdrop') closeModal(); });
+    $('#task-form').addEventListener('submit', async event => { event.preventDefault(); const values = { title: $('#task-title').value.trim(), category: $('#task-list-name').value, due: $('#task-due').value, priority: $('#task-priority').value }; try { await api(editingId ? `/api/tasks/${editingId}` : '/api/tasks', { method: editingId ? 'PATCH' : 'POST', body: JSON.stringify(values) }); closeModal(); await loadTasks(); } catch (error) { alert(error.message); } });
+    async function loadTasks() { tasks = await api('/api/tasks'); render(); }
+    function showAuth(mode) { authMode = mode; const signup = mode === 'signup'; $('#name-field').style.display = signup ? 'block' : 'none'; $('#auth-title').textContent = signup ? 'Welcome to Daymark.' : 'Welcome back.'; $('#auth-description').textContent = signup ? 'Create an account to keep your tasks synced and private across devices.' : 'Sign in to keep your tasks synced and private across devices.'; $('#auth-submit').textContent = signup ? 'Create account' : 'Sign in'; $('#auth-switch-copy').innerHTML = signup ? 'Already have an account? <button class="auth-toggle" id="auth-toggle" type="button">Sign in</button>' : 'New to Daymark? <button class="auth-toggle" id="auth-toggle" type="button">Create an account</button>'; $('#auth-backdrop').classList.remove('hidden'); }
+    $('#auth-form').addEventListener('submit', async event => { event.preventDefault(); $('#auth-error').textContent = ''; try { const body = { email: $('#auth-email').value, password: $('#auth-password').value }; if (authMode === 'signup') body.name = $('#auth-name').value; const result = await api(`/api/auth/${authMode}`, { method: 'POST', body: JSON.stringify(body) }); currentUser = result.user; $('#account-name').textContent = currentUser.name; $('#auth-backdrop').classList.add('hidden'); await loadTasks(); } catch (error) { $('#auth-error').textContent = error.message; } });
+    $('#auth-backdrop').addEventListener('click', event => { if (event.target.id === 'auth-toggle') showAuth(authMode === 'signup' ? 'login' : 'signup'); });
+    $('#logout').addEventListener('click', async () => { await api('/api/auth/logout', { method: 'POST' }); currentUser = null; tasks = []; showAuth('login'); render(); });
+    $('#date-label').textContent = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }); $('#week-label').textContent = today.toLocaleDateString(undefined, { year: 'numeric' });
+    (async () => { try { const result = await api('/api/auth/me'); currentUser = result.user; $('#account-name').textContent = currentUser.name; $('#auth-backdrop').classList.add('hidden'); await loadTasks(); } catch (error) { showAuth('signup'); $('#auth-error').textContent = window.location.protocol === 'file:' ? error.message : ''; render(); } })();
+  </script>
+</body>
+</html>
